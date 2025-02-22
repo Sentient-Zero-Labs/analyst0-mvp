@@ -59,6 +59,8 @@ class Settings(BaseSettings):
     DEFAULT_QUERY_LIMIT: int = 100
     DEFAULT_QUERY_TIMEOUT: int = 120
 
+    ENCRYPTION_KEY: str
+
     @property
     def SUPER_ADMIN_EMAILS(self):
         return [email.strip() for email in self.SUPER_ADMIN_EMAILS_STR.split(",")]
