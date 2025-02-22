@@ -1,0 +1,11 @@
+curl https://api.openai.com/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer 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" \
+  -d '{
+    "model": "gpt-4o-mini",
+    "store": true,
+    "messages": [
+      {"role": "user", "content": "write a haiku about ai"}
+    ]
+  }'
+

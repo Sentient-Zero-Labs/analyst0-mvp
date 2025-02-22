@@ -1,0 +1,6 @@
+[flake8]
+# This line 
+ignore = E501, E711
+
+# flake8 set root to src
+root = .

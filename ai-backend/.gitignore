@@ -1,0 +1,15 @@
+# Ignore all pycache in all folders
+__pycache__/
+
+.env
+.env.local
+.env.prod
+
+venv/
+logs/app.log
+.idea
+**/*venv*/
+.coverage
+logs/error.log
+ecosystem.config.js
+.vscode/*

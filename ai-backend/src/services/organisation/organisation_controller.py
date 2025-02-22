@@ -1,0 +1,84 @@
+from typing import List
+
+from fastapi import APIRouter, Depends
+from sqlalchemy import and_, func
+from sqlalchemy.orm import Session
+
+from src.database import get_db
+from src.middleware.wrap_response import DataResponse, DataResponseClass
+from src.services.auth.auth_dependency import get_current_user
+from src.services.data_source.data_source_model import DataSourceModel
+from src.services.organisation.organisation_model import (
+    OrganisationModel,
+    OrganisationUserModel,
+    OrganisationUserRoleEnum,
+)
+from src.services.organisation.organisation_schema import (
+    Organisation,
+    OrganisationCreateSchema,
+    OrganisationListResponseItem,
+)
+from src.services.organisation_slack_bot.organisation_slack_bot_model import OrganisationSlackBotModel
+from src.services.user.user_schema import UserSchema
+from src.utils.uuid import generate_uuid
+
+router = APIRouter(prefix="/organisations")
+
+
+@router.post("", response_model=DataResponseClass[Organisation])
+async def create_organisation(
+    organisation: OrganisationCreateSchema,
+    current_user: UserSchema = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    new_organisation = OrganisationModel(name=organisation.name, public_id=generate_uuid())
+
+    db.add(new_organisation)
+    db.flush()
+
+    new_organisation_user = OrganisationUserModel(
+        organisation_id=new_organisation.id, user_id=current_user.id, role=OrganisationUserRoleEnum.ADMIN
+    )
+
+    db.add(new_organisation_user)
+
+    db.commit()
+    db.refresh(new_organisation)
+
+    return DataResponse(data=new_organisation)
+
+
+@router.get("", response_model=DataResponseClass[List[OrganisationListResponseItem]])
+async def get_organisation_list(current_user: UserSchema = Depends(get_current_user), db: Session = Depends(get_db)):
+    organisations = (
+        db.query(
+            OrganisationModel,
+            func.count(OrganisationSlackBotModel.id).label("slack_bot_count"),
+            func.count(DataSourceModel.id).label("data_source_count"),
+            OrganisationUserModel.role.label("user_role"),
+        )
+        .join(
+            OrganisationUserModel,
+            and_(
+                OrganisationUserModel.organisation_id == OrganisationModel.id,
+                OrganisationUserModel.user_id == current_user.id,
+            ),
+        )
+        .join(
+            OrganisationSlackBotModel, OrganisationSlackBotModel.organisation_id == OrganisationModel.id, isouter=True
+        )
+        .join(DataSourceModel, DataSourceModel.organisation_id == OrganisationModel.id, isouter=True)
+        .group_by(OrganisationModel.id, OrganisationUserModel.role)
+        .filter(OrganisationUserModel.user_id == current_user.id)
+        .all()
+    )
+
+    result = []
+
+    for organisation, slack_bot_count, data_source_count, user_role in organisations:
+        organisation.is_slack_bot_enabled = slack_bot_count > 0
+        organisation.data_source_count = data_source_count
+        organisation.user_role = user_role
+        result.append(organisation)
+
+    return DataResponse(data=result)
