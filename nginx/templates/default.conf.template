@@ -21,10 +21,22 @@ server {
     server_name ${API_SERVER_NAME};
 
     location / {
+        # Disable IPv6 resolution for upstream
+        resolver 127.0.0.11 ipv6=off;
+        
         proxy_pass ${API_HOST}:${API_PORT};
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        
+        # Add these headers to handle redirects properly
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_redirect off;
+        
+        # Increase timeouts if needed
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
     }
 }
