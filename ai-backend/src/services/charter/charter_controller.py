@@ -131,7 +131,7 @@ async def get_data_entity_list_for_charter(
     return DataResponse(data=result)
 
 
-@router.get("/", response_model=DataResponseClass[List[CharterListResponseItem]])
+@router.get("", response_model=DataResponseClass[List[CharterListResponseItem]])
 def get_charter_list(organisation: OrganisationModel = Depends(get_user_organisation), db: Session = Depends(get_db)):
     charters = (
         db.query(
