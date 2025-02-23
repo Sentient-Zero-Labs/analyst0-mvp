@@ -24,7 +24,7 @@ from .charter_schema import CharterCreate, CharterListResponseItem, CharterRespo
 router = APIRouter(prefix="/organisations/{organisation_public_id}/charters")
 
 
-@router.post("/")
+@router.post("")
 def create_charter(
     create_charter: CharterCreate,
     organisation: OrganisationModel = Depends(get_admin_organisation),
