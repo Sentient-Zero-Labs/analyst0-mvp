@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
-
 from src.database import get_async_db, get_db
 from src.internal_services.sql_analyzer.sql_analyzer_factory import SQLAnalyzerFactory
 from src.middleware.wrap_response import DataResponse, DataResponseClass
@@ -28,7 +27,7 @@ router = APIRouter(
 logger = setup_logger()
 
 
-@router.post("/", response_model=DataResponseClass[PlaygroundChatInput])
+@router.post("", response_model=DataResponseClass[PlaygroundChatInput])
 async def handle_playground_chat(
     playground_chat_input: PlaygroundChatInput,
     has_credits: bool = Depends(check_organisation_credit_usage_for_playground),

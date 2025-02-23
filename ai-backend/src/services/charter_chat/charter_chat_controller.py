@@ -4,7 +4,6 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
-
 from src.database import get_async_db, get_db
 from src.internal_services.data_source_connector.data_source_connector_base import (
     DataSourceConnectorBase,
@@ -73,7 +72,7 @@ async def get_conversation(
     return DataResponse(data=[Message(**msg) for msg in conversation.messages])
 
 
-@router.post("/", response_model=DataResponseClass[List[Message]])
+@router.post("", response_model=DataResponseClass[List[Message]])
 async def handle_chat_question(
     chat_input: ChatInput,
     has_credits: bool = Depends(check_organisation_credit_usage_for_chat),
