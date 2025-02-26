@@ -24,7 +24,7 @@ from .charter_schema import CharterCreate, CharterListResponseItem, CharterRespo
 router = APIRouter(prefix="/organisations/{organisation_public_id}/charters")
 
 
-@router.post("/")
+@router.post("")
 def create_charter(
     create_charter: CharterCreate,
     organisation: OrganisationModel = Depends(get_admin_organisation),
@@ -131,7 +131,7 @@ async def get_data_entity_list_for_charter(
     return DataResponse(data=result)
 
 
-@router.get("/", response_model=DataResponseClass[List[CharterListResponseItem]])
+@router.get("", response_model=DataResponseClass[List[CharterListResponseItem]])
 def get_charter_list(organisation: OrganisationModel = Depends(get_user_organisation), db: Session = Depends(get_db)):
     charters = (
         db.query(

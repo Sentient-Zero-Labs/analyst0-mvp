@@ -2,7 +2,6 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-
 from src.database import get_db
 from src.internal_services.sql_analyzer.sql_analyzer_factory import SQLAnalyzerFactory
 from src.middleware.wrap_response import DataResponse, DataResponseClass
@@ -23,7 +22,7 @@ from .charter_example_schema import (
 router = APIRouter(prefix="/organisation/{organisation_public_id}/charter/{charter_id}/example")
 
 
-@router.post("/", response_model=DataResponseClass[CharterExampleResponse])
+@router.post("", response_model=DataResponseClass[CharterExampleResponse])
 async def create_charter_example(
     charter_example_create: CharterExampleCreate,
     db_charter: CharterModel = Depends(get_admin_charter),

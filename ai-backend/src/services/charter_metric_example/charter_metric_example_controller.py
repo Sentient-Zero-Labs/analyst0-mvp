@@ -2,7 +2,6 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-
 from src.database import get_db
 from src.internal_services.sql_analyzer.sql_analyzer_factory import SQLAnalyzerFactory
 from src.middleware.wrap_response import DataResponse, DataResponseClass
@@ -29,7 +28,7 @@ router = APIRouter(
 
 
 # POST endpoint to create a new charter metric example
-@router.post("/", response_model=DataResponseClass[CharterMetricExampleResponse])
+@router.post("", response_model=DataResponseClass[CharterMetricExampleResponse])
 async def create_charter_metric_example(
     charter_metric_example_create: CharterMetricExampleCreate,
     db_charter_metric: CharterMetricModel = Depends(get_admin_charter_metric),
@@ -62,7 +61,7 @@ def get_charter_metric_example(
 
 
 # GET endpoint to retrieve all charter metric examples for a specific charter metric
-@router.get("/", response_model=DataResponseClass[List[CharterMetricExampleResponse]])
+@router.get("", response_model=DataResponseClass[List[CharterMetricExampleResponse]])
 def get_charter_metric_examples_list(
     db_charter_metric: CharterMetricModel = Depends(get_user_charter_metric), db: Session = Depends(get_db)
 ):
