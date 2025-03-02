@@ -48,9 +48,6 @@ export default async function ProjectsPage({
           >
             <div className="flex flex-col gap-2">
               <h3 className="font-semibold text-lg">{org.name}</h3>
-              <p className="text-sm text-muted-foreground">
-                Data Sources: {org.data_source_count}
-              </p>
             </div>
           </Link>
         ))}
