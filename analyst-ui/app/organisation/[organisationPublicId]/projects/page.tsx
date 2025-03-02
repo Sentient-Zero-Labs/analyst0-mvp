@@ -35,7 +35,7 @@ export default async function PlatformGuidelinesPage({
 
   const dataSourceImages = [
     {
-      src: "/platform-guide/Data Source Creation 000.pngg",
+      src: "/platform-guide/Data Source Creation 000.png",
       alt: "Create Data Source"
     },
     {
