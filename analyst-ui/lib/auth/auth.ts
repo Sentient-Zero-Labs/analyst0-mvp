@@ -75,8 +75,10 @@ const authOptions: NextAuthConfig = {
           if (customToken.expiresAt && Date.now() < (customToken.expiresAt * 1000) - 60000) {
             return customToken;
           }
-        } catch (error) {
-          // Token verification failed, try to refresh
+        } catch (_error) {
+          // Add error logging
+          console.error('Token verification failed:', _error);
+          
           if (!customToken.refreshToken) {
             return { ...customToken, error: "TokenError" };
           }
@@ -96,7 +98,9 @@ const authOptions: NextAuthConfig = {
                 error: undefined // Clear any previous errors
               };
             }
-          } catch (refreshError) {
+          } catch (_refreshError) {
+            // Add error logging
+            console.error('Token refresh failed:', _refreshError);
             return { ...customToken, error: "TokenError" };
           }
         }
