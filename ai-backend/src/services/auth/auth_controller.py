@@ -1,7 +1,8 @@
-import jwt
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
-from sqlalchemy.orm import Session
+from typing import Optional
 
+import jwt
+from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException
+from sqlalchemy.orm import Session
 from src.database import get_db
 from src.internal_services.slack.slack_service import send_new_user_registered_to_slack
 from src.services.auth.auth_service import AuthService
@@ -50,25 +51,25 @@ async def login(form_data: UserLoginSchema, db: Session = Depends(get_db)):
 
 @router.post("/refresh")
 async def refresh_token(refresh_token: TokenRefreshSchema, db: Session = Depends(get_db)):
-    logger.info(f"Refresh token attempt for refresh token: {refresh_token.refresh_token}")
+    logger.info("Refresh token attempt")
     try:
         payload = decode_token(refresh_token.refresh_token)
         if payload["type"] != "refresh":
-            logger.info(f"Invalid token type: {payload['type']}")
-            raise HTTPException(status_code=400, detail="Invalid token type")
+            logger.info("Invalid token type")
+            raise HTTPException(status_code=401, detail="Invalid token type")
 
         user_email = payload["sub"]
         user = db.query(UserModel).filter(UserModel.email == user_email).first()
 
         if not user:
             logger.info(f"User not found for email: {user_email}")
-            raise HTTPException(status_code=404, detail="User not found")
+            raise HTTPException(status_code=401, detail="Invalid token")
 
         access_token, expires_at = AuthService.create_access_token(data={"sub": user.email})
-        return {"access_token": access_token, "token_type": "bearer", "expires_at": expires_at}
-    except jwt.JWTError:
-        logger.info(f"Invalid refresh token: {refresh_token.refresh_token}")
-        raise HTTPException(status_code=400, detail="Invalid refresh token")
+        return {"access_token": access_token, "expires_at": expires_at}
+    except Exception as e:
+        logger.error(f"Error refreshing token: {str(e)}")
+        raise HTTPException(status_code=401, detail="Invalid refresh token")
 
 
 @router.post("/register")
@@ -159,3 +160,36 @@ async def resend_verification(email_data: dict, background_tasks: BackgroundTask
     AuthService.create_and_send_verification_email(email, background_tasks)
 
     return {"message": "Verification email has been resent"}
+
+
+@router.post("/verify")
+async def verify_token(authorization: Optional[str] = Header(None)):
+    """Verify an access token"""
+    if not authorization or not authorization.startswith("Bearer "):
+        logger.error(f"Invalid authorization header: {authorization}")
+        raise HTTPException(status_code=401, detail="Invalid authorization header")
+
+    token = authorization.split(" ")[1]
+    logger.debug(f"Attempting to verify token: {token[:10]}...")  # Log first 10 chars for security
+
+    try:
+        # Verify the token
+        payload = decode_token(token)
+
+        # Check if it's an access token
+        if payload.get("type") != "access":
+            logger.warning(f"Invalid token type: {payload.get('type')}")
+            raise HTTPException(status_code=401, detail="Invalid token type")
+
+        logger.debug("Token verified successfully")
+        return {"valid": True}
+
+    except jwt.ExpiredSignatureError:
+        logger.info("Token has expired")
+        raise HTTPException(status_code=401, detail="Token has expired")
+    except jwt.PyJWTError as e:
+        logger.error(f"JWT verification error: {str(e)}")
+        raise HTTPException(status_code=401, detail="Invalid token")
+    except Exception as e:
+        logger.error(f"Unexpected error verifying token: {str(e)}")
+        raise HTTPException(status_code=401, detail="Invalid token")

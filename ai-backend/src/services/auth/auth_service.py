@@ -1,10 +1,11 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
+from typing import Tuple
 
+import jwt
 from fastapi import BackgroundTasks
 from fastapi.templating import Jinja2Templates
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
-
 from src.settings import settings
 from src.utils.logger import logger
 from src.utils.security import create_token
@@ -22,11 +23,18 @@ class AuthService:
         return token, expires_in
 
     @staticmethod
-    def create_access_token(data: dict):
-        token, expires_in = create_token(
-            data, timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES), token_type="access"
+    def create_access_token(data: dict) -> Tuple[str, int]:
+        to_encode = data.copy()
+        expires_delta = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        expires = datetime.utcnow() + expires_delta
+        to_encode.update(
+            {
+                "exp": expires.timestamp(),
+                "type": "access",  # Add token type
+            }
         )
-        return token, expires_in
+        encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+        return encoded_jwt, int(expires.timestamp())
 
     @staticmethod
     def create_refresh_token(data: dict):

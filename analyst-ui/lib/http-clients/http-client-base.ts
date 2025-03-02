@@ -35,7 +35,9 @@ class HttpClient {
       },
     };
 
-    if (data) options.body = JSON.stringify(data);
+    if (data !== null) {
+      options.body = JSON.stringify(data);
+    }
 
     try {
       const response = await fetch(url, options);

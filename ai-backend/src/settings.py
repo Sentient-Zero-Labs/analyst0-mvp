@@ -9,9 +9,9 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
 
     # Tokens
-    ACCESS_TOKEN_EXPIRE_MINUTES: int
-    REFRESH_TOKEN_EXPIRE_DAYS: int
-    VERIFICATION_TOKEN_EXPIRE_MINUTES: int
+    ACCESS_TOKEN_EXPIRE_MINUTES: float
+    REFRESH_TOKEN_EXPIRE_DAYS: float
+    VERIFICATION_TOKEN_EXPIRE_MINUTES: float
 
     ENV: str = "local"
     CURRENT_SERVER_URL: str

@@ -52,7 +52,6 @@ const authOptions: NextAuthConfig = {
 
       // First time login, saving the token
       if (account && user) {
-        // First-time login, save the `access_token`, its expiry and the `refresh_token`
         return {
           ...customToken,
           accessToken: customUser.access_token,
@@ -60,45 +59,61 @@ const authOptions: NextAuthConfig = {
           expiresAt: customUser.expires_at,
           provider: account.provider,
         };
-      } else if (customToken.expiresAt && Date.now() < customToken.expiresAt * 1000) {
-        // Subsequent logins, but the `access_token` is still valid
+      }
 
-        return customToken;
-      } else {
-        // Subsequent logins, but the `access_token` has expired, try to refresh it
-        if (!customToken.refreshToken) throw new TypeError("Missing refresh_token");
-
+      // For subsequent requests, verify the token first
+      if (customToken.accessToken) {
         try {
-          const response = await backendHttpClient.post<Session>("/auth/refresh", {
-            refresh_token: customToken.refreshToken,
-          });
-
-          if (response) {
-            // Update the token with the new access token and expiry
-            customToken.accessToken = response.access_token;
-            customToken.expiresAt = response.expires_at;
-            // Preserve the refresh token if a new one wasn't issued
-            if (response.refresh_token) {
-              customToken.refreshToken = response.refresh_token;
-            }
+          // Try to verify the token
+          const headers = {
+            Authorization: `Bearer ${customToken.accessToken}`,
+          };
+          
+          await backendHttpClient.post("/auth/verify", null, "", headers);
+          
+          // If verification succeeds and token isn't close to expiry, return existing token
+          if (customToken.expiresAt && Date.now() < (customToken.expiresAt * 1000) - 60000) {
             return customToken;
-          } else {
-            throw new Error("Failed to refresh token");
           }
         } catch (error) {
-          console.error("Error refreshing access_token", error);
-          // If we fail to refresh the token, return an error so we can handle it on the page
-          customToken.error = "RefreshTokenError";
-          return customToken;
+          // Token verification failed, try to refresh
+          if (!customToken.refreshToken) {
+            return { ...customToken, error: "TokenError" };
+          }
+
+          try {
+            const response = await backendHttpClient.post<Session>("/auth/refresh", {
+              refresh_token: customToken.refreshToken,
+            });
+
+            if (response) {
+              // Successfully refreshed token, update session and continue
+              return {
+                ...customToken,
+                accessToken: response.access_token,
+                expiresAt: response.expires_at,
+                refreshToken: response.refresh_token || customToken.refreshToken,
+                error: undefined // Clear any previous errors
+              };
+            }
+          } catch (refreshError) {
+            return { ...customToken, error: "TokenError" };
+          }
         }
       }
+
+      return { ...customToken, error: "TokenError" };
     },
     async session({ session, token }): Promise<CustomSession> {
-      if (!token) return session;
-
       const customSession = session as CustomSession;
       const customToken = token as CustomJWT;
 
+      if (customToken.error === "TokenError") {
+        await signOut({ redirect: false });
+        return customSession;
+      }
+
+      // Update session with new token data
       customSession.accessToken = customToken.accessToken as string;
       customSession.refreshToken = customToken.refreshToken as string;
       customSession.expiresAt = customToken.expiresAt as number;
