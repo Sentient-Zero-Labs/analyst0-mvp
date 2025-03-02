@@ -13,7 +13,7 @@ export default async function Home() {
   if (!organisations || organisations.length === 0) {
     redirect("/organisation/create");
   } else {
-    redirect(`/organisation/${organisations[0].public_id}/playground`);
+    redirect(`/organisation/${organisations[0].public_id}/projects`);
   }
 
   return null;

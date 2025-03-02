@@ -179,7 +179,7 @@ export function OrganisationSidebar({ user }: { user?: CustomUser }) {
       <Link
         href={
           selectedOrganisation?.public_id
-            ? `/organisation/${selectedOrganisation?.public_id}/chat`
+            ? `/organisation/${selectedOrganisation?.public_id}/projects`
             : "/organisation/create"
         }
         className="flex items-center overflow-hidden py-2 px-2 h-[45px] border-b space-x-1"
