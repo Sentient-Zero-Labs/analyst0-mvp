@@ -100,7 +100,7 @@ export function CharterForm({ charter, organisationPublicId }: CharterFormProps)
         onSuccess: () => {
           // Handle success (e.g., show a success message, reset form)
           form.reset();
-          toast.success("Charter created successfully");
+          toast.success("Agent created successfully");
           router.refresh();
           setTimeout(() => router.push(`/organisation/${organisationPublicId}/charters`), 500);
         },
