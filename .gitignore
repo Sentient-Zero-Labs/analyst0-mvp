@@ -1,2 +1,8 @@
 logs/frontend/*
 logs/*
+package-lock.json
+.package-lock.json
+husky
+node_modules
+bin.js
+.husky

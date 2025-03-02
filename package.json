@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "husky": "^9.1.7"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "cd analyst-ui && pnpm build"
+    }
+  }
+}
