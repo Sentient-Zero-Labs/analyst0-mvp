@@ -82,7 +82,7 @@ elif settings.ENV == "dev":
     app.add_middleware(
         CORSMiddleware,
         # This should be your Next.js app's URL
-        allow_origins=[settings.FRONTEND_URL],
+        allow_origins=[settings.FRONTEND_URL, "http://localhost:3000"],
         allow_credentials=True,
         allow_methods=["*"],  # Allows all methods
         allow_headers=["*"],  # Allows all headers
@@ -93,7 +93,7 @@ elif settings.ENV == "local":
     app.add_middleware(
         CORSMiddleware,
         # This should be your Next.js app's URL
-        allow_origins=[settings.FRONTEND_URL],
+        allow_origins=[settings.FRONTEND_URL, "http://localhost:3000"],
         allow_credentials=True,
         allow_methods=["*"],  # Allows all methods
         allow_headers=["*"],  # Allows all headers

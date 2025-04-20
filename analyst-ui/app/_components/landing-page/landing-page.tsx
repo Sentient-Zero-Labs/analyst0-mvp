@@ -1,19 +1,21 @@
 import Link from "next/link";
-import { 
-  LuBrain, LuDatabase, LuLayoutDashboard, LuMessageSquare, 
+import {
+  LuBrain, LuDatabase, LuLayoutDashboard, LuMessageSquare,
   LuShieldCheck, LuZap, LuSlack, LuGlobe, LuKey, LuLock, LuBrainCircuit
 } from "react-icons/lu";
 import { SiMysql, SiPostgresql, SiSnowflake } from "react-icons/si";
 import Footer from "./footer";
+import TokenHandler from "../../_components/TokenHandler";
 
 export default function LandingPage() {
   return (
     <div className="bg-background min-h-screen">
+      <TokenHandler />
       {/* Hero Section with Diagram */}
       <section className="relative min-h-[90vh] flex items-center">
         <div className="absolute inset-0 bg-gradient-to-r from-violet-600 via-indigo-500 to-purple-600 opacity-10" />
         <div className="absolute inset-0 bg-grid-white/[0.02]" />
-        
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             {/* Left side - Text Content */}
@@ -52,7 +54,7 @@ export default function LandingPage() {
                   <div className="absolute inset-4 bg-violet-400/10 rounded-full flex items-center justify-center">
                     <LuBrainCircuit className="w-24 h-24 text-violet-500" />
                   </div>
-                  
+
                   {/* Orbiting Elements */}
                   <div className="absolute inset-0 animate-spin-slow">
                     <div className="absolute top-4 left-1/2 -translate-x-1/2">
@@ -126,7 +128,7 @@ export default function LandingPage() {
                 description: "Predictive analytics and trend analysis at your fingertips"
               }
             ].map((feature, idx) => (
-              <div 
+              <div
                 key={idx}
                 className="bg-background rounded-xl p-6 border border-violet-500/10 hover:border-violet-500/20 transition-all"
               >
@@ -204,7 +206,7 @@ export default function LandingPage() {
                 {/* Connection Lines */}
                 <div className="absolute top-1/2 left-0 w-full h-[2px] bg-gradient-to-r from-violet-500/20 via-indigo-500/20 to-purple-500/20" />
                 <div className="absolute top-[calc(50%-1px)] left-0 w-full h-[2px] bg-gradient-to-r from-violet-500/10 via-indigo-500/10 to-purple-500/10" />
-                
+
                 {/* Step 1: User Query */}
                 <div className="relative group">
                   <div className="bg-background border border-violet-500/20 rounded-xl p-6 relative z-10 h-full transition-all duration-300 hover:border-violet-500/40 hover:shadow-lg hover:shadow-violet-500/5">
@@ -234,7 +236,7 @@ export default function LandingPage() {
                       </div>
                       <h4 className="font-semibold mb-2">2. SQL Generation Engine</h4>
                       <p className="text-sm text-foreground/70">Our AI agent transforms your query using only schema metadata</p>
-                      
+
                       {/* SQL Generation Details */}
                       <div className="mt-4 bg-gradient-to-br from-violet-500/5 to-indigo-500/5 rounded-lg p-4 backdrop-blur-sm">
                         <div className="flex items-center gap-2 mb-2">
@@ -299,8 +301,8 @@ export default function LandingPage() {
                     description: "All queries execute in your secure environment"
                   }
                 ].map((item, idx) => (
-                  <div 
-                    key={idx} 
+                  <div
+                    key={idx}
                     className="group flex items-start gap-4 p-4 bg-gradient-to-br from-violet-500/5 to-indigo-500/5 rounded-xl border border-violet-500/10 hover:border-violet-500/20 transition-all duration-300"
                   >
                     <div className="p-2 bg-violet-500/10 rounded-lg text-violet-500 group-hover:scale-110 transition-transform duration-300">
