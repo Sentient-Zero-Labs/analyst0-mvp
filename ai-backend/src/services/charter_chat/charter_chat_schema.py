@@ -45,6 +45,11 @@ class UserOutput(ChatInput):
     pass
 
 
+class ChatResponse(BaseModel):
+    messages: List[Message]
+    conversation_id: str
+
+
 class QueryPayload(BaseModel):
     messages: List[Message]
     original_prompt: str
@@ -89,6 +94,7 @@ class FilterMetaDataLLMResponseV2(BaseModel):
 
 class ConversationListResponse(BaseModel):
     conversation_id: str
+    title: Optional[str] = None
     created_at: datetime
     updated_at: datetime
     last_message: Optional[Message] = None

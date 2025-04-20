@@ -17,6 +17,24 @@ export const MessageSchema = z.object({
 
 export const MessagesSchema = z.array(MessageSchema);
 
+export const ChatResponseSchema = z.object({
+  messages: MessagesSchema,
+  conversation_id: z.string(),
+});
+
+export const ConversationSchema = z.object({
+  conversation_id: z.string(),
+  title: z.string().nullable(),
+  created_at: z.string(),
+  updated_at: z.string(),
+  last_message: MessageSchema.nullable(),
+});
+
+export const ConversationsListSchema = z.array(ConversationSchema);
+
 export type Message = z.infer<typeof MessageSchema>;
 export type Messages = z.infer<typeof MessagesSchema>;
 export type DataCallResponse = z.infer<typeof DataCallSchema>;
+export type ChatResponse = z.infer<typeof ChatResponseSchema>;
+export type Conversation = z.infer<typeof ConversationSchema>;
+export type ConversationsList = z.infer<typeof ConversationsListSchema>;

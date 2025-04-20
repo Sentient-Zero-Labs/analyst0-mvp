@@ -37,16 +37,35 @@ export default function Chat({
   selectedEntityIds,
   selectedCharterMetricIds,
   sampleQuestions,
+  conversationId,
+  initialMessages = [],
+  isLoadingConversation = false,
 }: {
   organisationPublicId: string;
   charterId: number;
   selectedEntityIds: number[];
   selectedCharterMetricIds: number[];
   sampleQuestions?: string[] | null;
+  conversationId?: string | null;
+  initialMessages?: Messages;
+  isLoadingConversation?: boolean;
 }) {
   const [inputText, setInputText] = useState("");
-  const [messages, setMessages] = useState<Messages>([]);
+  const [messages, setMessages] = useState<Messages>(initialMessages);
   const [isThinking, setIsThinking] = useState(false);
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(conversationId || null);
+
+  // Update messages when initialMessages changes (e.g., when loading a conversation)
+  useEffect(() => {
+    if (initialMessages && initialMessages.length > 0) {
+      setMessages(initialMessages);
+    }
+  }, [initialMessages]);
+
+  // Update current conversation ID when conversationId prop changes
+  useEffect(() => {
+    setCurrentConversationId(conversationId || null);
+  }, [conversationId]);
 
   const chatMutation = useChatMutation({ organisationPublicId, charterId });
 
@@ -60,17 +79,20 @@ export default function Chat({
       setInputText("");
 
       try {
-        const messagesResponse = await chatMutation.mutateAsync({
+        const chatResponse = await chatMutation.mutateAsync({
           messages,
           selectedEntityIds,
           selectedCharterMetricIds,
+          conversationId: currentConversationId || undefined,
         });
 
         setIsThinking(false);
 
-        if (!messagesResponse) return;
+        if (!chatResponse) return;
 
-        setMessages(messagesResponse as Messages);
+        // Update messages and conversation ID
+        setMessages(chatResponse.messages);
+        setCurrentConversationId(chatResponse.conversation_id);
       } catch (error) {
         const httpError = error as HttpException;
         setIsThinking(false);
@@ -88,8 +110,17 @@ export default function Chat({
         }
       }
     },
-    [messages, selectedEntityIds, selectedCharterMetricIds]
+    [messages, selectedEntityIds, selectedCharterMetricIds, currentConversationId, chatMutation]
   );
+
+  if (isLoadingConversation) {
+    return (
+      <div className="flex w-full flex-col items-center justify-center h-full">
+        <DotLottieReact src="/robot-thinking.lottie" loop={true} speed={1} autoplay={true} className="scale-150" />
+        <p className="text-center mt-4">Loading conversation...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex w-full flex-col items-center relative min-h-screen">

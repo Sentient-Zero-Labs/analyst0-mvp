@@ -17,6 +17,7 @@ from src.services.charter.charter_model import CharterModel
 from src.services.charter_chat.charter_chat_conversation_service import CharterChatConversationService
 from src.services.charter_chat.charter_chat_schema import (
     ChatInput,
+    ChatResponse,
     ConversationListResponse,
     Message,
     QueryPayload,
@@ -51,6 +52,7 @@ async def get_conversations(
         data=[
             ConversationListResponse(
                 conversation_id=conv.conversation_id,
+                title=conv.title,
                 created_at=conv.created_at,
                 updated_at=conv.updated_at,
                 last_message=Message(**conv.messages[-1]) if conv.messages else None,
@@ -72,7 +74,24 @@ async def get_conversation(
     return DataResponse(data=[Message(**msg) for msg in conversation.messages])
 
 
-@router.post("", response_model=DataResponseClass[List[Message]])
+@router.delete("/conversations/{conversation_id}")
+async def delete_conversation(
+    conversation_id: str,
+    charter: CharterModel = Depends(get_user_charter),
+    async_db: AsyncSession = Depends(get_async_db),
+):
+    conversation = await CharterChatConversationService.get_conversation(conversation_id, async_db)
+    if not conversation or conversation.charter_id != charter.id:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    success = await CharterChatConversationService.delete_conversation(conversation_id, async_db)
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to delete conversation")
+
+    return DataResponse(data={"message": "Conversation deleted successfully"})
+
+
+@router.post("", response_model=DataResponseClass[ChatResponse])
 async def handle_chat_question(
     chat_input: ChatInput,
     has_credits: bool = Depends(check_organisation_credit_usage_for_chat),
@@ -145,4 +164,8 @@ async def handle_chat_question(
         large_credit_count=2,
     )
 
-    return DataResponse(data=query_payload.messages)
+    # Return messages along with conversation ID
+    return DataResponse(data={
+        "messages": query_payload.messages,
+        "conversation_id": chat_input.conversation_id
+    })
