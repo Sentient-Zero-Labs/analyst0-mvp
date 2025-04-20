@@ -24,7 +24,21 @@ class HttpClient {
     headers: Record<string, string> = {},
     validationSchema?: z.Schema
   ): Promise<T> {
+    // Check if we have a token in localStorage when running in browser
+    if (typeof window !== 'undefined' && !accessToken) {
+      const localStorageToken = localStorage.getItem('accessToken');
+      if (localStorageToken) {
+        console.log(`[HttpClient] Using token from localStorage for ${endpoint}`);
+        accessToken = localStorageToken;
+      }
+    }
     const url = this.baseUrl + endpoint;
+
+    console.log(`[HttpClient] ${method} request to ${endpoint}`, {
+      hasAccessToken: !!accessToken,
+      hasData: !!data,
+      headers: Object.keys(headers)
+    });
 
     const options: RequestOptions = {
       method,
@@ -40,16 +54,28 @@ class HttpClient {
     }
 
     try {
+      console.log(`[HttpClient] Sending ${method} request to ${url}`);
       const response = await fetch(url, options);
+      console.log(`[HttpClient] Response received from ${endpoint}`, {
+        status: response.status,
+        ok: response.ok,
+        statusText: response.statusText
+      });
+
       if (!response.ok) {
         const responseJSON = await response.json();
         const errorData = responseJSON.details ? responseJSON.details : responseJSON;
+        console.error(`[HttpClient] Error response from ${endpoint}:`, errorData);
         throw new HttpException(errorData.error, response.status);
       }
 
       if (response.status == 200) {
         const responseJSON = await response.json();
         const responseData = responseJSON.data ? responseJSON.data : responseJSON;
+        console.log(`[HttpClient] Successful response from ${endpoint}`, {
+          hasData: !!responseData,
+          isWrapped: !!responseJSON.data
+        });
 
         if (validationSchema) {
           return validationSchema.parse(responseData) as T;
@@ -57,9 +83,10 @@ class HttpClient {
         return responseData as T;
       }
 
+      console.log(`[HttpClient] Empty response from ${endpoint}`);
       return null as T;
     } catch (error) {
-      console.error("Fetch error:", error);
+      console.error(`[HttpClient] Fetch error for ${endpoint}:`, error);
       throw error;
     }
   }

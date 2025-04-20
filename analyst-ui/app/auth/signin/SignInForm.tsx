@@ -13,13 +13,13 @@ import {
 } from "@/services/auth/auth.schema";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useResendEmailVerificationMutation } from "@/services/auth/auth.service";
 import { toast } from "sonner";
 
 export default function SignInForm() {
-  const router = useRouter();
+  // const router = useRouter();
   const [isEmailVerified, setIsEmailVerified] = useState(true);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
@@ -40,17 +40,89 @@ export default function SignInForm() {
   const onSubmit = async (data: SignIn) => {
     setIsLoggingIn(true);
     try {
-      await signIn("credentials", {
+      console.log("[SignInForm] Attempting to sign in with email:", data.email);
+
+      try {
+        // Try a direct API call first to get the tokens
+        console.log("[SignInForm] Making direct API call to login");
+        const loginResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: data.email,
+            password: data.password,
+          }),
+        });
+
+        if (!loginResponse.ok) {
+          const errorData = await loginResponse.json();
+          console.error("[SignInForm] Direct login failed:", errorData);
+          toast.error(errorData.detail || "Login failed");
+          return;
+        }
+
+        const session = await loginResponse.json();
+        console.log("[SignInForm] Direct login successful", {
+          hasAccessToken: !!session.access_token,
+          expiresAt: session.expires_at
+        });
+
+        // Store the tokens in localStorage for immediate use
+        localStorage.setItem('accessToken', session.access_token);
+        localStorage.setItem('refreshToken', session.refresh_token);
+        localStorage.setItem('tokenExpiry', session.expires_at.toString());
+
+        // Now call signIn to set up the NextAuth session
+        const result = await signIn("credentials", {
+          email: data.email,
+          password: data.password,
+          redirect: false,
+        });
+
+        console.log("[SignInForm] NextAuth sign in result:", result);
+
+        // Clear any previous session reload attempts
+        sessionStorage.removeItem('sessionReloadAttempt');
+
+        // Redirect to home page with tokens in query params for server-side session setup
+        console.log("[SignInForm] Redirecting to home page");
+        window.location.href = window.location.origin;
+
+        return;
+      } catch (apiError) {
+        console.error("[SignInForm] API login error:", apiError);
+        toast.error("Login failed. Please try again.");
+      }
+
+      // Fallback to traditional sign in if direct API call fails
+      console.log("[SignInForm] Falling back to traditional sign in");
+      const result = await signIn("credentials", {
         email: data.email,
         password: data.password,
         redirect: false,
       });
-      router.push("/");
 
+      console.log("[SignInForm] Traditional sign in result:", result);
+
+      if (result?.error) {
+        console.error("[SignInForm] Sign in error:", result.error);
+        toast.error(result.error || "Failed to sign in");
+        return;
+      }
+
+      console.log("[SignInForm] Sign in successful, redirecting to home");
+
+      // Wait longer for session to initialize
       setTimeout(() => {
-        location.reload();
-      }, 500);
+        console.log("[SignInForm] Reloading page after timeout");
+        window.location.href = "/"; // Use direct location change instead of router
+      }, 2000); // Increased to 2 seconds
+
     } catch (error) {
+      console.error("[SignInForm] Sign in error:", error);
+
       if (error instanceof Error && error.message.toLowerCase().includes("not verified")) {
         setIsEmailVerified(false);
       } else if (error instanceof Error && error.message.toLowerCase().includes("incorrect")) {
