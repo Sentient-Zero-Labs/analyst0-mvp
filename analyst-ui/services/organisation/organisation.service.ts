@@ -133,3 +133,22 @@ export const getOrganisationUsers = async (
     .validate(OrganisationUsersResponseSchema)
     .get<OrganisationUserResponse[]>(`/organisations/${organisationPublicId}/users`, accessToken);
 };
+
+// Remove a user from an organisation
+export const useRemoveUserFromOrganisationMutation = (organisationPublicId: string) => {
+  const { session } = useCurrentSession();
+
+  return useMutation({
+    mutationFn: async (userId: number) => {
+      return await removeUserFromOrganisation(organisationPublicId, userId, session!.accessToken!);
+    },
+  });
+};
+
+export const removeUserFromOrganisation = async (
+  organisationPublicId: string,
+  userId: number,
+  accessToken: string
+): Promise<void> => {
+  await backendHttpClient.delete(`/organisations/${organisationPublicId}/users/${userId}`, accessToken);
+};

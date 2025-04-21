@@ -170,3 +170,50 @@ async def get_organisation_users(
         )
 
     return DataResponse(data=result)
+
+
+@router.delete("/{organisation_public_id}/users/{user_id}", status_code=204)
+async def remove_user_from_organisation(
+    organisation_public_id: str,
+    user_id: int,
+    organisation: OrganisationModel = Depends(get_admin_organisation),
+    current_user: UserSchema = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Remove a user from an organisation. Only organisation admins can remove users.
+    Admins cannot be removed to prevent locking out of the organisation."""
+    # Get the user's role in the organisation
+    org_user = (
+        db.query(OrganisationUserModel)
+        .filter(
+            OrganisationUserModel.organisation_id == organisation.id,
+            OrganisationUserModel.user_id == user_id,
+        )
+        .first()
+    )
+
+    if not org_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found in this organisation.",
+        )
+
+    # Check if the user is an admin - prevent removing admins
+    if org_user.role == OrganisationUserRoleEnum.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Admin users cannot be removed from the organisation.",
+        )
+
+    # Check if the user is trying to remove themselves
+    if user_id == current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You cannot remove yourself from the organisation.",
+        )
+
+    # Remove the user from the organisation
+    db.delete(org_user)
+    db.commit()
+
+    return None
