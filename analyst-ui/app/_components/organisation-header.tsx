@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LuCheck, LuLogOut, LuPlus } from "react-icons/lu";
+import { LuCheck, LuLogOut } from "react-icons/lu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,28 +24,28 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { isArrayNotEmpty } from "@/lib/utils/array.utils";
 import { OrganisationListResponseItem } from "@/services/organisation/organisation.schema";
 
-function AddNewDropdown({ selectedOrganisation }: { selectedOrganisation: OrganisationListResponseItem | null }) {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon" className="size-8">
-          <LuPlus className="size-5" />
-          <span className="sr-only">Add new</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem asChild>
-          <Link href={`/organisation/create`}>New Project</Link>
-        </DropdownMenuItem>
-        {selectedOrganisation && (
-          <DropdownMenuItem asChild>
-            <Link href={`/organisation/${selectedOrganisation?.public_id}/charters/create`}>New Agent</Link>
-          </DropdownMenuItem>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
+// function AddNewDropdown({ selectedOrganisation }: { selectedOrganisation: OrganisationListResponseItem | null }) {
+//   return (
+//     <DropdownMenu>
+//       <DropdownMenuTrigger asChild>
+//         <Button variant="outline" size="icon" className="size-8">
+//           <LuPlus className="size-5" />
+//           <span className="sr-only">Add new</span>
+//         </Button>
+//       </DropdownMenuTrigger>
+//       <DropdownMenuContent align="end">
+//         <DropdownMenuItem asChild>
+//           <Link href={`/organisation/create`}>New Project</Link>
+//         </DropdownMenuItem>
+//         {selectedOrganisation && (
+//           <DropdownMenuItem asChild>
+//             <Link href={`/organisation/${selectedOrganisation?.public_id}/charters/create`}>New Agent</Link>
+//           </DropdownMenuItem>
+//         )}
+//       </DropdownMenuContent>
+//     </DropdownMenu>
+//   );
+// }
 
 function UserDropdown({
   user,
@@ -159,7 +159,7 @@ export default function OrganisationHeader({ user }: { user?: CustomUser }) {
         <SidebarTrigger />
         {user ? (
           <div className="flex items-center space-x-4">
-            <AddNewDropdown selectedOrganisation={selectedOrganisation} />
+            {/* <AddNewDropdown selectedOrganisation={selectedOrganisation} /> */}
             <UserDropdown
               user={user}
               organisations={organisations || []}
