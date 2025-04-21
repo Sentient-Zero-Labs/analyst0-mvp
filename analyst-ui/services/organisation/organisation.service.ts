@@ -5,6 +5,9 @@ import {
   OrganisationUpdate,
   OrganisationListResponseItem,
   OrganisationListResponseSchema,
+  OrganisationUserAdd,
+  OrganisationUserResponse,
+  OrganisationUsersResponseSchema,
 } from "./organisation.schema";
 import { backendHttpClient } from "@/lib/http-clients/backend-http-server";
 import { useCurrentSession } from "@/lib/auth/session/react";
@@ -85,4 +88,48 @@ export const updateOrganisation = async (
 
 export const deleteOrganisation = async (id: number, accessToken: string): Promise<void> => {
   await backendHttpClient.delete(`/organisations/${id}`, accessToken);
+};
+
+// Add a user to an organisation
+export const useAddUserToOrganisationMutation = (organisationPublicId: string) => {
+  const { session } = useCurrentSession();
+
+  return useMutation({
+    mutationFn: async (userData: OrganisationUserAdd) => {
+      return await addUserToOrganisation(organisationPublicId, userData, session!.accessToken!);
+    },
+  });
+};
+
+// Get organisation users
+export const useOrganisationUsersQuery = (organisationPublicId: string) => {
+  const { session } = useCurrentSession();
+
+  return useQuery<OrganisationUserResponse[], Error>({
+    queryKey: ["organisation-users", organisationPublicId],
+    queryFn: () => getOrganisationUsers(organisationPublicId, session!.accessToken!),
+    enabled: !!session?.accessToken && !!organisationPublicId,
+  });
+};
+
+// Helper functions for API calls
+export const addUserToOrganisation = async (
+  organisationPublicId: string,
+  userData: OrganisationUserAdd,
+  accessToken: string
+): Promise<OrganisationUserResponse> => {
+  return await backendHttpClient.post<OrganisationUserResponse>(
+    `/organisations/${organisationPublicId}/users`,
+    userData,
+    accessToken
+  );
+};
+
+export const getOrganisationUsers = async (
+  organisationPublicId: string,
+  accessToken: string
+): Promise<OrganisationUserResponse[]> => {
+  return await backendHttpClient
+    .validate(OrganisationUsersResponseSchema)
+    .get<OrganisationUserResponse[]>(`/organisations/${organisationPublicId}/users`, accessToken);
 };

@@ -17,7 +17,7 @@ import {
 import { NavUser } from "./nav-user";
 import { VscRobot } from "react-icons/vsc";
 
-import { LuChevronRight, LuDatabase, LuLayoutDashboard, LuPlus } from "react-icons/lu";
+import { LuChevronRight, LuDatabase, LuLayoutDashboard, LuPlus, LuUsers } from "react-icons/lu";
 import Link from "next/link";
 import { Separator } from "../../../components/ui/separator";
 import { useSelectedCharter, useSelectedOrganisation } from "@/lib/store/global-store";
@@ -124,6 +124,12 @@ const bottomData: { navMain: SidebarGroup[] } = {
           icon: <LuDatabase className="mr-1 size-3.5" />,
           slug: "data-sources",
           regex: /data-sources(?!.*(?:data-entity|chat))/,
+        },
+        {
+          title: "Users",
+          icon: <LuUsers className="mr-1 size-3.5" />,
+          slug: "users",
+          regex: /users$/,
         },
       ],
     },
