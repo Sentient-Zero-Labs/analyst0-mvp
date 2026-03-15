@@ -197,12 +197,6 @@ All endpoints are prefixed with `/v1`.
 
 ---
 
-## Documentation
-
-See the [project wiki](https://github.com/Sentient-Zero-Labs/analyst0-mvp/wiki) for detailed guides.
-
----
-
 <p align="center">
   Built for <strong>TechThrive Hackathon — March 2026</strong><br/>
   by <a href="https://github.com/Sentient-Zero-Labs">Sentient Zero Labs</a>
