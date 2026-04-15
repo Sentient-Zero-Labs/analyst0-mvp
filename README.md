@@ -198,6 +198,5 @@ All endpoints are prefixed with `/v1`.
 ---
 
 <p align="center">
-  Built for <strong>TechThrive Hackathon — March 2026</strong><br/>
   by <a href="https://github.com/Sentient-Zero-Labs">Sentient Zero Labs</a>
 </p>
